@@ -6,7 +6,7 @@ use rust_mcp_sdk::schema::{CallToolResult, schema_utils::CallToolError, TextCont
 
 pub async fn read_docx(
     _path: &Path,
-    _max_chars: usize,
+    _max_chars: i64,
     _fs: &crate::fs_service::FileSystemService,
 ) -> std::result::Result<CallToolResult, CallToolError> {
     Ok(CallToolResult::with_error(CallToolError::new(

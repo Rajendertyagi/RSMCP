@@ -10,16 +10,16 @@ use thiserror::Error;
 pub struct ListTreeRequest {
     pub path: PathBuf,
     #[serde(default = "default_depth")]
-    pub depth: usize,
+    pub depth: i64,
     #[serde(default)]
     pub include: Vec<String>,
     #[serde(default)]
     pub exclude: Vec<String>,
-    pub max_entries: Option<usize>,
+    pub max_entries: Option<i64>,
     pub cursor: Option<String>,
 }
 
-fn default_depth() -> usize { 2 }
+fn default_depth() -> i64 { 2 }
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -58,6 +58,8 @@ pub enum TreeError {
     InvalidCursor,
     #[error("cursor was created for different arguments")]
     IncompatibleCursor,
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
 }
 
 pub fn list_tree(request: &ListTreeRequest) -> Result<ListTreeOutput, TreeError> {
@@ -135,7 +137,7 @@ fn walk_dir(
         return;
     };
 
-    while let Ok(entry) = items.next() {
+    while let Some(Ok(entry)) = items.next() {
         let entry = match entry {
             Ok(e) => e,
             Err(e) => {

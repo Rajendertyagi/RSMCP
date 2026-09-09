@@ -17,10 +17,10 @@ pub struct GitBlame {
     pub file: String,
     /// Maximum number of lines to blame (default: 1000, max: 10000).
     #[serde(default = "default_max_lines")]
-    pub max_lines: usize,
+    pub max_lines: i64,
 }
 
-fn default_max_lines() -> usize { 1000 }
+fn default_max_lines() -> i64 { 1000 }
 
 impl GitBlame {
     pub async fn run_tool(

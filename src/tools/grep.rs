@@ -19,14 +19,14 @@ pub struct Grep {
     pub case_sensitive: bool,
     /// Number of context lines before and after each match (default: 0).
     #[serde(default = "default_context_lines")]
-    pub context_lines: usize,
+    pub context_lines: i64,
     /// Maximum number of matches to return (default: 1000).
     #[serde(default = "default_max_matches")]
-    pub max_matches: usize,
+    pub max_matches: i64,
 }
 
-fn default_context_lines() -> usize { 0 }
-fn default_max_matches() -> usize { 1000 }
+fn default_context_lines() -> i64 { 0 }
+fn default_max_matches() -> i64 { 1000 }
 
 impl Grep {
     pub async fn run_tool(

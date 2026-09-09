@@ -23,13 +23,13 @@ pub struct GrepRequest {
     #[serde(default)]
     pub case_sensitive: bool,
     #[serde(default = "default_context_lines")]
-    pub context_lines: usize,
+    pub context_lines: i64,
     #[serde(default = "default_max_matches")]
-    pub max_matches: usize,
+    pub max_matches: i64,
 }
 
-fn default_context_lines() -> usize { 0 }
-fn default_max_matches() -> usize { 1000 }
+fn default_context_lines() -> i64 { 0 }
+fn default_max_matches() -> i64 { 1000 }
 
 pub async fn grep(request: &GrepRequest, fs: &crate::fs_service::FileSystemService) -> Result<Vec<GrepMatch>, String> {
     let search_path = Path::new(&request.path);
@@ -65,7 +65,7 @@ fn grep_file(
     regex: &regex::Regex,
     request: &GrepRequest,
     results: &mut Vec<GrepMatch>,
-    max_matches: usize,
+    max_matches: i64,
 ) {
     let content = match std::fs::read_to_string(file_path) {
         Ok(c) => c,
@@ -83,8 +83,8 @@ fn grep_file(
 
         let ctx_before: Vec<String> = if request.context_lines > 0 {
             lines.iter()
-                .skip(line_num.saturating_sub(request.context_lines))
-                .take(request.context_lines)
+                .skip(line_num.saturating_sub(request.context_lines as usize))
+                .take(request.context_lines as usize)
                 .map(|s| (*s).to_string())
                 .collect()
         } else { Vec::new() };
@@ -92,7 +92,7 @@ fn grep_file(
         let ctx_after: Vec<String> = if request.context_lines > 0 {
             lines.iter()
                 .skip(line_num)
-                .take(request.context_lines)
+                .take(request.context_lines as usize)
                 .map(|s| (*s).to_string())
                 .collect()
         } else { Vec::new() };
@@ -113,7 +113,7 @@ fn grep_directory(
     regex: &regex::Regex,
     request: &GrepRequest,
     results: &mut Vec<GrepMatch>,
-    max_matches: usize,
+    max_matches: i64,
 ) {
     let text_extensions = [
         "rs", "ts", "js", "py", "go", "java", "c", "cpp", "h", "hpp",
@@ -123,15 +123,21 @@ fn grep_directory(
     ];
 
     let walk = ignore::Walk::new(dir_path)
-        .filter_entry(|e| {
-            let p = e.path();
+        .filter(|e| {
+            let p = match e {
+                Ok(e) => e.path(),
+                Err(_) => return true,
+            };
             p.extension().map_or(false, |ext| {
                 text_extensions.contains(&ext.to_string_lossy().as_ref())
             })
         })
-        .filter_entry(|e| {
+        .filter(|e| {
             // Skip common non-source directories
-            let p = e.path();
+            let p = match e {
+                Ok(e) => e.path(),
+                Err(_) => return true,
+            };
             !p.iter().any(|c| {
                 let s = c.to_string_lossy();
                 matches!(s.as_ref(), ".git" | "node_modules" | ".venv" | "venv" | "__pycache__" | "target" | "dist" | "build" | ".DS_Store")

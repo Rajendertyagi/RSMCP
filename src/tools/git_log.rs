@@ -15,7 +15,7 @@ pub struct GitLog {
     pub path: String,
     /// Number of commits to return (default: 20, max: 1000).
     #[serde(default = "default_count")]
-    pub count: usize,
+    pub count: i64,
     /// Optional commit range (e.g., "main..HEAD").
     #[serde(default)]
     pub range: Option<String>,
@@ -24,7 +24,7 @@ pub struct GitLog {
     pub path_filter: Option<String>,
 }
 
-fn default_count() -> usize { 20 }
+fn default_count() -> i64 { 20 }
 
 impl GitLog {
     pub async fn run_tool(

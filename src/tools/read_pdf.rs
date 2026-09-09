@@ -15,13 +15,13 @@ pub struct ReadPdf {
     /// Path to the PDF file.
     pub path: String,
     /// Optional page number to read (1-based). If None, reads all pages.
-    pub page: Option<usize>,
+    pub page: Option<i64>,
     /// Maximum number of pages to read (default: 10).
     #[serde(default = "default_max_pages")]
-    pub max_pages: usize,
+    pub max_pages: i64,
 }
 
-fn default_max_pages() -> usize {
+fn default_max_pages() -> i64 {
     10
 }
 

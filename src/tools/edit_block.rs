@@ -20,10 +20,10 @@ pub struct EditBlock {
     pub replace: String,
     /// Expected number of replacements (default: 1).
     #[serde(default = "default_expected")]
-    pub expected: usize,
+    pub expected: i64,
 }
 
-fn default_expected() -> usize {
+fn default_expected() -> i64 {
     1
 }
 

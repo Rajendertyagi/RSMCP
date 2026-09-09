@@ -16,10 +16,10 @@ pub struct ReadDocx {
     pub path: String,
     /// Maximum number of characters to extract (default: 50000).
     #[serde(default = "default_max_chars")]
-    pub max_chars: usize,
+    pub max_chars: i64,
 }
 
-fn default_max_chars() -> usize {
+fn default_max_chars() -> i64 {
     50000
 }
 

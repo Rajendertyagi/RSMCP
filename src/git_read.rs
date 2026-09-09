@@ -30,14 +30,14 @@ pub struct GitStatusOutput {
 pub struct GitLogRequest {
     pub path: PathBuf,
     #[serde(default = "default_count")]
-    pub count: usize,
+    pub count: i64,
     #[serde(default)]
     pub range: Option<String>,
     #[serde(default)]
     pub path_filter: Option<String>,
 }
 
-fn default_count() -> usize { 20 }
+fn default_count() -> i64 { 20 }
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -90,10 +90,10 @@ pub struct GitBlameRequest {
     pub path: PathBuf,
     pub file: PathBuf,
     #[serde(default = "default_blame_lines")]
-    pub max_lines: usize,
+    pub max_lines: i64,
 }
 
-fn default_blame_lines() -> usize { 1000 }
+fn default_blame_lines() -> i64 { 1000 }
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]

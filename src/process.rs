@@ -147,7 +147,7 @@ impl ProcessManager {
         &self,
         pid: u32,
         offset: i64,
-        length: usize,
+        length: i64,
     ) -> Result<ReadResult, String> {
         let sessions = self.sessions.lock().await;
         let session = sessions.get(&pid).ok_or_else(|| format!("No session found for PID {}", pid))?;

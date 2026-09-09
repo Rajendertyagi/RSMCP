@@ -20,7 +20,7 @@ pub struct SearchAndReplace {
     pub replacement: String,
     /// Maximum number of replacements (0 = unlimited).
     #[serde(default)]
-    pub max_replacements: usize,
+    pub max_replacements: i64,
     /// Whether to treat pattern as regex (default: false).
     #[serde(default)]
     pub is_regex: bool,

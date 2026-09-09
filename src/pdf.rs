@@ -7,8 +7,8 @@ use rust_mcp_sdk::schema::{CallToolResult, schema_utils::CallToolError, TextCont
 
 pub async fn read_pdf(
     _path: &Path,
-    _page: Option<usize>,
-    _max_pages: usize,
+    _page: Option<i64>,
+    _max_pages: i64,
     _fs: &crate::fs_service::FileSystemService,
 ) -> std::result::Result<CallToolResult, CallToolError> {
     Ok(CallToolResult::with_error(CallToolError::new(
@@ -30,7 +30,7 @@ pub async fn list_pdf_pages(
 
 pub async fn extract_images_from_pdf(
     _path: &Path,
-    _max_images: usize,
+    _max_images: i64,
     _fs: &crate::fs_service::FileSystemService,
 ) -> std::result::Result<CallToolResult, CallToolError> {
     Ok(CallToolResult::with_error(CallToolError::new(

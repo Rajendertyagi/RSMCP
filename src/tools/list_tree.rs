@@ -14,7 +14,7 @@ pub struct ListTree {
     pub path: String,
     /// Maximum descendant depth (default: 2).
     #[serde(default = "default_depth")]
-    pub depth: usize,
+    pub depth: i64,
     /// Optional inclusion glob patterns.
     #[serde(default)]
     pub include: Vec<String>,
@@ -22,13 +22,13 @@ pub struct ListTree {
     #[serde(default)]
     pub exclude: Vec<String>,
     /// Page size (default: 1000).
-    pub max_entries: Option<usize>,
+    pub max_entries: Option<i64>,
     /// Opaque cursor from a previous response for pagination.
     #[serde(default)]
     pub cursor: Option<String>,
 }
 
-fn default_depth() -> usize { 2 }
+fn default_depth() -> i64 { 2 }
 
 impl ListTree {
     pub async fn run_tool(

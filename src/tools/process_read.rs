@@ -17,10 +17,10 @@ pub struct ProcessRead {
     pub offset: i64,
     /// Number of lines to read.
     #[serde(default = "default_length")]
-    pub length: usize,
+    pub length: i64,
 }
 
-fn default_length() -> usize {
+fn default_length() -> i64 {
     100
 }
 

@@ -10,7 +10,7 @@ pub async fn edit_block(
     path: &Path,
     search: &str,
     replace: &str,
-    expected: usize,
+    expected: i64,
     fs: &crate::fs_service::FileSystemService,
 ) -> std::result::Result<CallToolResult, CallToolError> {
     if search.is_empty() {
@@ -86,7 +86,7 @@ pub async fn search_and_replace(
     path: &Path,
     pattern: &str,
     replacement: &str,
-    max_replacements: usize,
+    max_replacements: i64,
     is_regex: bool,
     fs: &crate::fs_service::FileSystemService,
 ) -> std::result::Result<CallToolResult, CallToolError> {

@@ -157,8 +157,8 @@ pub fn apply_patch(request: &ApplyPatchRequest) -> Result<ApplyPatchOutput, Patc
         hunks_applied: hunks.len(),
         added_lines: added,
         removed_lines: removed,
-        old_blake3,
-        new_blake3,
+        old_blake3: old_blake3.to_string(),
+        new_blake3: new_blake3.to_string(),
         byte_length: output.len(),
         preview,
     })

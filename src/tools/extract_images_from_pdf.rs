@@ -16,10 +16,10 @@ pub struct ExtractImagesFromPdf {
     pub path: String,
     /// Maximum number of images to extract (default: 20).
     #[serde(default = "default_max_images")]
-    pub max_images: usize,
+    pub max_images: i64,
 }
 
-fn default_max_images() -> usize {
+fn default_max_images() -> i64 {
     20
 }
 
