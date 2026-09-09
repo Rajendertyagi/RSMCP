@@ -76,3 +76,4 @@ lto = "thin"
 
 [package.metadata.typos]
 default.extend-ignore-re = ["4ded5ca"]
+default.extend-ignore-identifiers = ["Rajendertyagi", "winfs", "mcpb", "calamine", "loxpdf"]
