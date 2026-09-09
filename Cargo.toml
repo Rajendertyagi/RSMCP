@@ -64,7 +64,6 @@ calamine = "0.23"
 rust_xlsxwriter = "0.80"
 quick-xml = { version = "0.36", features = ["encoding"] }
 regex = "1.10"
-ignore = "0.4"
 
 [dev-dependencies]
 tempfile = "3.2"
