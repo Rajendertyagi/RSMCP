@@ -1,0 +1,12 @@
+[default]
+extend-ignore-identifiers = [
+    "Rajendertyagi",
+    "winfs",
+    "mcpb",
+    "calamine",
+    "loxpdf",
+]
+extend-ignore-words = []
+
+[default.extend-words]
+rsmcp = "rsmcp"
