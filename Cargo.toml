@@ -1,17 +1,21 @@
 [package]
-name = "rust-mcp-filesystem"
-version = "0.4.5"
+name = "rsmcp"
+version = "0.1.0"
 edition = "2024"
-repository = "https://github.com/rust-mcp-stack/rust-mcp-filesystem"
-authors = ["Ali Hashemi"]
+repository = "https://github.com/Rajendertyagi/RSMCP"
+authors = ["Ali Hashemi", "Rajendertyagi"]
 categories = ["command-line-interface", "command-line-utilities"]
-description = "Blazing-fast, asynchronous MCP server for seamless filesystem operations."
-homepage = "https://github.com/rust-mcp-stack/rust-mcp-filesystem"
+description = "A comprehensive MCP server with filesystem, process management, PDF, Excel, and DOCX operations."
+homepage = "https://github.com/Rajendertyagi/RSMCP"
 keywords = [
-    "rust-mcp-filesystem",
-    "rust-mcp-stack",
-    "mcp-filesystem",
-    "mcp-server-in-rust",
+    "rsmcp",
+    "rust-mcp",
+    "mcp-server",
+    "filesystem",
+    "pdf",
+    "excel",
+    "docx",
+    "process-management",
 ]
 license = "MIT"
 
@@ -33,10 +37,11 @@ rust-mcp-sdk = {version="1.0", default-features = false, features = [
 thiserror = { version = "2.0" }
 dirs = "6.0"
 cap-std = "4"
+ignore = "0.4"
 similar = "=2.7"
 chrono = "0.4"
 clap = { version = "4.5", features = ["derive","env"] }
-tokio = "1.4"
+tokio = { version = "1.4", features = ["process", "rt-multi-thread", "sync"] }
 serde = "1.0"
 serde_json = "1.0"
 async-trait = "0.1"
@@ -51,6 +56,15 @@ infer = "0.19.0"
 rayon = "1.11.0"
 sha2 = "0.10.9"
 glob-match = "0.2"
+blake3 = { version = "1.8", default-features = false }
+crossbeam = "0.8"
+strsim = "0.11"
+pdf = "0.10"
+calamine = "0.23"
+rust_xlsxwriter = "0.80"
+quick-xml = { version = "0.36", features = ["encoding"] }
+regex = "1.10"
+ignore = "0.4"
 
 [dev-dependencies]
 tempfile = "3.2"

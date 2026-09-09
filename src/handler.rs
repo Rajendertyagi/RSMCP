@@ -14,12 +14,15 @@ use rust_mcp_sdk::schema::{
 use std::cmp::Ordering;
 use std::collections::HashSet;
 use std::sync::Arc;
+use crate::process::ProcessManager;
+use tokio::sync::RwLock;
 
 pub struct FileSystemHandler {
     readonly: bool,
     mcp_roots_support: bool,
     fs_service: Arc<FileSystemService>,
     disabled_tools: HashSet<String>,
+    process_manager: Arc<RwLock<ProcessManager>>,
 }
 
 impl FileSystemHandler {
@@ -34,6 +37,7 @@ impl FileSystemHandler {
                 .unwrap_or_default()
                 .into_iter()
                 .collect(),
+            process_manager: Arc::new(RwLock::new(ProcessManager::new())),
         })
     }
 
@@ -239,6 +243,19 @@ impl ServerHandler for FileSystemHandler {
             self.assert_write_access()?;
         }
 
+        // Route process tools to their own handler
+        match &tool_params {
+            FileSystemTools::ProcessStart(_)
+            | FileSystemTools::ProcessRead(_)
+            | FileSystemTools::ProcessWrite(_)
+            | FileSystemTools::ProcessKill(_)
+            | FileSystemTools::ProcessList(_)
+            | FileSystemTools::ProcessPs(_) => {
+                return self.handle_process_tool(tool_params).await;
+            }
+            _ => {}
+        }
+
         invoke_tools!(
             tool_params,
             &self.fs_service,
@@ -265,7 +282,53 @@ impl ServerHandler for FileSystemHandler {
             ReadFileLines,
             FindEmptyDirectories,
             CalculateDirectorySize,
-            FindDuplicateFiles
+            FindDuplicateFiles,
+            ReadPdf,
+            ListPdfPages,
+            ExtractImagesFromPdf,
+            ReadExcel,
+            ListExcelSheets,
+            WriteExcel,
+            ReadDocx,
+            ListDocxParts,
+            EditBlock,
+            SearchAndReplace,
+            ProcessStart,
+            ProcessRead,
+            ProcessWrite,
+            ProcessKill,
+            ProcessList,
+            ProcessPs,
+            ApplyPatch,
+            ListTree,
+            GitStatus,
+            GitLog,
+            GitShow,
+            GitDiff,
+            GitBlame,
+            Grep,
+            DiffFiles
         )
+    }
+}
+
+impl FileSystemHandler {
+    async fn handle_process_tool(
+        &self,
+        tool: FileSystemTools,
+    ) -> std::result::Result<CallToolResult, CallToolError> {
+        let pm = self.process_manager.read().await;
+
+        match tool {
+            FileSystemTools::ProcessStart(params) => ProcessStart::run_tool(params, &pm).await,
+            FileSystemTools::ProcessRead(params) => ProcessRead::run_tool(params, &pm).await,
+            FileSystemTools::ProcessWrite(params) => ProcessWrite::run_tool(params, &pm).await,
+            FileSystemTools::ProcessKill(params) => ProcessKill::run_tool(params, &pm).await,
+            FileSystemTools::ProcessList(params) => ProcessList::run_tool(params, &pm).await,
+            FileSystemTools::ProcessPs(params) => ProcessPs::run_tool(params, &pm).await,
+            _ => Err(CallToolError::new(
+                "Invalid process tool".to_string(),
+            )),
+        }
     }
 }

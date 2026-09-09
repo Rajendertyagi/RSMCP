@@ -1,5 +1,5 @@
 use clap::Parser;
-use rust_mcp_filesystem::{cli, server};
+use rsmcp::{cli, server};
 
 #[tokio::main]
 async fn main() {

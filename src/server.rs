@@ -10,18 +10,18 @@ use rust_mcp_sdk::{ToMcpServerHandler, mcp_icon};
 pub fn server_details() -> InitializeResult {
     InitializeResult {
         server_info: Implementation {
-            name: "rust-mcp-filesystem".to_string(),
+            name: "rsmcp".to_string(),
             version: env!("CARGO_PKG_VERSION").to_string(),
-            title: Some("Filesystem MCP Server".to_string()),
+            title: Some("RSMCP - Document & Process MCP Server".to_string()),
             description: Some(
-                "A fast and efficient tools for managing filesystem operations.".to_string(),
+                "A comprehensive MCP server with filesystem, process management, PDF, Excel, and DOCX operations.".to_string(),
             ),
             icons: vec![mcp_icon!(
                 src = "https://rust-mcp-stack.github.io/rust-mcp-filesystem/_media/rust-mcp-filesystem-128.png",
                 mime_type = "image/png",
                 sizes = ["128x128"]
             )],
-            website_url: Some("https://rust-mcp-stack.github.io/rust-mcp-filesystem".into()),
+            website_url: Some("https://github.com/Rajendertyagi/RSMCP".into()),
         },
         capabilities: ServerCapabilities {
             experimental: None,

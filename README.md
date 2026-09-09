@@ -1,89 +1,110 @@
 <p align="center">
-  <img width="96" src="./docs/_media/rust-mcp-filesystem.png" alt="Rust MCP Filesystem Logo" width="300">
+  <img width="96" src="./docs/_media/rust-mcp-filesystem.png" alt="RSMCP Logo" width="300">
 </p>
 
-# Rust MCP Filesystem
+# RSMCP — Rust MCP Server
 
-Rust MCP Filesystem is a blazingly fast, asynchronous, and lightweight MCP (Model Context Protocol) server designed for efficient handling of various filesystem operations.
-This project is a pure Rust rewrite of the JavaScript-based `@modelcontextprotocol/server-filesystem`, offering enhanced capabilities, improved performance, and a robust feature set tailored for modern filesystem interactions.
+RSMCP is a comprehensive, production-grade MCP (Model Context Protocol) server built in Rust. It extends the original `rust-mcp-filesystem` with **process management**, **PDF reading**, **Excel read/write**, and **DOCX extraction** — delivering **38 tools** in a single native binary.
 
-📝 Refer to the [project documentation](https://rust-mcp-stack.github.io/rust-mcp-filesystem) for installation and configuration instructions.
+This is a fork of [rust-mcp-filesystem](https://github.com/rust-mcp-stack/rust-mcp-filesystem) with added document and process capabilities from [DCMCP](https://github.com/wonderwhy-er/DesktopCommanderMCP).
 
-⭐️ It is also available on [Docker Hub’s MCP Registry](https://hub.docker.com/mcp/server/rust-mcp-filesystem) at: https://hub.docker.com/mcp/server/rust-mcp-filesystem
+📝 Full documentation: https://github.com/Rajendertyagi/RSMCP
 
 ## Features
 
-- **⚡ High Performance**: Built in Rust for speed and efficiency, leveraging asynchronous I/O to handle filesystem operations seamlessly.
-- **🔒 Read-Only by Default**: Starts with no write access, ensuring safety until explicitly configured otherwise.
-- **🔍 Advanced Glob Search**: Supports full glob pattern matching allowing precise filtering of files and directories using standard glob syntax.For example, patterns like `*.rs`, `src/**/*.txt`, and `logs/error-???.log` are valid and can be used to match specific file types, recursive directory searches, or patterned filenames.
-- **🔄 MCP Roots support**: enabling clients to dynamically modify the list of allowed directories (disabled by default).
-- **📦 ZIP Archive Support**: Tools to create ZIP archives from files or directories and extract ZIP files with ease.
-- **🪶 Lightweight**: Standalone with no external dependencies (e.g., no Node.js, Python etc required), compiled to a single binary with a minimal resource footprint, ideal for both lightweight and extensive deployment scenarios.
-- **🎛️ Tool Disabling**: Disable specific tools to limit functionality and reduce the number of available tools, helping to save tokens.
+- **⚡ High Performance** — Pure Rust, async I/O, compiled to a single native binary (~10 MB)
+- **🔒 Root Isolation** — cap-std based confined directory access; symlinks cannot escape allowed roots
+- **🔍 Advanced Search** — Glob file search + regex/literal content search via grep crate
+- **🔄 MCP Roots Support** — Clients can dynamically update allowed directories (disabled by default)
+- **📦 ZIP Archive Support** — Create/extract ZIPs, compress directories with glob patterns
+- **🧰 Process Management** — Start, read, write, kill, and list background processes with session tracking
+- **📄 PDF Tools** — Read text, list pages with dimensions, extract embedded images
+- **📊 Excel Tools** — Read sheets as tabular data, list sheets, write 2D string arrays
+- **📝 DOCX Tools** — Extract plain text from Word documents, list XML parts
+- **✏️ Fuzzy Editing** — Surgical text replacement with Levenshtein/Jaro-Winkler fuzzy fallback
+- **🪶 Lightweight** — No Node.js, Python, or other runtimes required
+- **🎛️ Tool Disabling** — Disable specific tools to reduce token usage
 
-#### 👉 Refer to [capabilities](https://rust-mcp-stack.github.io/rust-mcp-filesystem/#/capabilities) for a full list of tools and other capabilities.
+## Tool Catalog (38 tools)
 
-## 🔧 Installation & Configuration
+### Filesystem (24 tools — inherited from rust-mcp-filesystem)
+`read_text_file`, `write_file`, `edit_file`, `list_directory`, `list_directory_with_sizes`, `list_allowed_directories`, `directory_tree`, `file_info`, `apply_patch`, `create_directory`, `remove`, `hash_file`, `move`, `search_files`, `search_files_content`, `read_file_lines`, `head_file`, `tail_file`, `read_media_file`, `read_multiple_media_files`, `zip_files`, `unzip_file`, `zip_directory`, `find_empty_directories`, `calculate_directory_size`, `find_duplicate_files`
 
-For detailed setup instructions, please visit the [project documentation](https://rust-mcp-stack.github.io/rust-mcp-filesystem).
+### Document Readers (8 tools)
+| Tool | Description |
+|---|---|
+| `read_pdf` | Extract text from PDF (all or specific page) |
+| `list_pdf_pages` | Get page count and dimensions |
+| `extract_images_from_pdf` | Extract embedded images as base64 |
+| `read_excel` | Read sheet data as tabular text |
+| `list_excel_sheets` | List sheet names and dimensions |
+| `write_excel` | Write 2D string array to Excel |
+| `read_docx` | Extract plain text from Word docs |
+| `list_docx_parts` | List XML parts in DOCX |
 
+### Process Management (6 tools)
+| Tool | Description |
+|---|---|
+| `process_start` | Spawn a background process, return PID |
+| `process_read` | Paginated stdout read (offset/length) |
+| `process_write` | Send input to process stdin |
+| `process_kill` | Terminate a process by PID |
+| `process_list` | List active process sessions |
+| `process_ps` | List all system processes |
 
-### Quick installation guide
+### Enhanced Editing (2 tools)
+| Tool | Description |
+|---|---|
+| `edit_block` | Exact or fuzzy text replacement |
+| `search_and_replace` | Find/replace with regex support |
 
+## 🔧 Installation
 
-<!-- x-release-please-start-version -->
-- **Shell script**
-```sh
-curl --proto '=https' --tlsv1.2 -LsSf https://github.com/rust-mcp-stack/rust-mcp-filesystem/releases/download/v0.4.5/rust-mcp-filesystem-installer.sh | sh
+### From Source (GitHub Actions builds only — no local install required)
+```bash
+cargo install rsmcp --git https://github.com/Rajendertyagi/RSMCP
 ```
 
-- **PowerShell script**
-```sh
-powershell -ExecutionPolicy Bypass -c "irm https://github.com/rust-mcp-stack/rust-mcp-filesystem/releases/download/v0.4.5/rust-mcp-filesystem-installer.ps1 | iex"
+### Using cargo-dist (after release)
+```bash
+curl -LsSf https://github.com/Rajendertyagi/RSMCP/releases/latest/download/rsmcp-installer.sh | sh
 ```
 
-- **Homebrew**
-```sh
-brew install rust-mcp-stack/tap/rust-mcp-filesystem
+## Usage
+
+```bash
+# Read-only mode (default)
+rsmcp /path/to/allowed/dir1 /path/to/dir2
+
+# Read/write mode
+rsmcp --allow-write /path/to/allowed/dir
+
+# With MCP Roots support (client provides directories)
+rsmcp --enable-roots
+
+# Disable specific tools to save tokens
+rsmcp --disable-tools read_pdf,write_excel /path/to/dir
 ```
 
-#### **Cargo**
+## GitHub Actions Integration
 
-```sh
-cargo install rust-mcp-filesystem --locked
+Builds are automatically triggered on push/PR to `main`:
+
+```yaml
+- uses: actions/checkout@v4
+- uses: dtolnay/rust-toolchain@stable
+- run: cargo build --release
 ```
 
-- **NPM**
+Release artifacts are published to GitHub Releases on tagged releases.
 
-```sh
-npm i -g @rustmcp/rust-mcp-filesystem@latest
-```
-> The npm package is provided for convenience. It runs the same underlying Rust binary but can be installed and used as a standard npm package.
+## Security
 
-
-- **Docker**
-
-  https://hub.docker.com/mcp/server/rust-mcp-filesystem
-
-- **Download Binaries**
-
-  https://github.com/rust-mcp-stack/rust-mcp-filesystem/releases/tag/v0.4.5
-
-<!-- x-release-please-end -->
-
-
-## Purpose
-
-This project aims to provide a reliable, secure, and feature-rich MCP server for filesystem management, reimagining the capabilities of @modelcontextprotocol/server-filesystem in a more performant and type-safe language. Whether you’re building tools for file exploration, automation, or system integration, rust-mcp-filesystem offers a solid foundation.
-
-## 🧰 Built With
-
-The project leverages the [rust-mcp-sdk](https://github.com/rust-mcp-stack/rust-mcp-sdk) and [rust-mcp-schema](https://github.com/rust-mcp-stack/rust-mcp-schema) to build this server. check out those repositories if you’re interested in crafting your own Rust-based MCP project or converting existing ones to Rust for enhanced performance and safety.
+- All filesystem operations are confined to allowed roots via `cap-std`
+- Symlink escapes are rejected at the OS layer
+- Process management runs in isolated sessions with bounded output buffers
+- Read-only by default; write operations require `--allow-write`
 
 ## License
 
-This project is licensed under the MIT License. see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-Inspired by `@modelcontextprotocol/server-filesystem` and built with the power of Rust.
+MIT (same as upstream rust-mcp-filesystem)

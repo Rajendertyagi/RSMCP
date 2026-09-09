@@ -33,8 +33,18 @@ pub enum ServiceError {
     McpSdkError(#[from] McpSdkError),
     #[error("{0}")]
     ZipError(#[from] ZipError),
-    // #[error("{0}")]
-    // GlobPatternError(#[from] PatternError),
+    #[error("PDF error: {0}")]
+    PdfError(String),
+    #[error("Excel error: {0}")]
+    ExcelError(String),
+    #[error("DOCX error: {0}")]
+    DocxError(String),
+    #[error("Process error: {0}")]
+    ProcessError(String),
+    #[error("Patch error: {0}")]
+    PatchError(String),
+    #[error("Tree error: {0}")]
+    TreeError(String),
     #[error("File size exceeds the maximum allowed limit of {0} bytes")]
     FileTooLarge(usize),
     #[error("File size is below the minimum required limit of {0} bytes")]

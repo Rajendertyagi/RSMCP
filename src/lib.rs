@@ -1,7 +1,17 @@
 pub mod cli;
+pub mod diff_files;
+pub mod docx;
 pub mod error;
+pub mod excel;
 pub mod fs_service;
+pub mod git_read;
+pub mod grep_enhanced;
 pub mod handler;
 pub mod macros;
+pub mod patch;
+pub mod pdf;
+pub mod process;
 pub mod server;
 pub mod tools;
+pub mod tree;
+pub mod fuzzy_edit;
