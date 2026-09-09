@@ -47,6 +47,7 @@ macro_rules! invoke_tools {
             $(
                 FileSystemTools::$tool(params) => $tool::run_tool(params, $fs_service).await,
             )*
+            _ => unreachable!(),
         }
     };
 }
