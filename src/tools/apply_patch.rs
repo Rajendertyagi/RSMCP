@@ -45,7 +45,7 @@ impl ApplyPatch {
             dry_run: params.dry_run,
         };
 
-        let output = apply_patch(&request).map_err(|e| CallToolError::new(crate::error::ServiceError::FromString(e)))?;
+        let output = apply_patch(&request).map_err(|e| CallToolError::new(crate::error::ServiceError::FromString(e.to_string())))?;
 
         let mut result = String::new();
         result.push_str(&format!(

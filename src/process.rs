@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::path::Path;
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU32, Ordering};
 
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::process::Command;
@@ -18,14 +19,14 @@ pub struct ProcessSession {
 #[derive(Clone)]
 pub struct ProcessManager {
     sessions: Arc<Mutex<HashMap<u32, ProcessSession>>>,
-    next_pid: std::cell::Cell<u32>,
+    next_pid: Arc<AtomicU32>,
 }
 
 impl ProcessManager {
     pub fn new() -> Self {
         Self {
             sessions: Arc::new(Mutex::new(HashMap::new())),
-            next_pid: std::cell::Cell::new(1000),
+            next_pid: Arc::new(AtomicU32::new(1000)),
         }
     }
 
@@ -35,8 +36,7 @@ impl ProcessManager {
         cwd: Option<&Path>,
         timeout_ms: Option<u64>,
     ) -> Result<StartResult, String> {
-        let pid = self.next_pid.get();
-        self.next_pid.set(pid + 1);
+        let pid = self.next_pid.fetch_add(1, Ordering::Relaxed);
 
         let stdout_buffer: Vec<String> = Vec::new();
 
@@ -150,18 +150,23 @@ impl ProcessManager {
         offset: i64,
         length: i64,
     ) -> Result<ReadResult, String> {
-        let sessions = self.sessions.lock().await;
-        let session = sessions.get(&pid).ok_or_else(|| format!("No session found for PID {}", pid))?;
-
-        if !session.is_complete && offset == 0 {
-            // Wait briefly for new output
-            drop(sessions);
-            tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+        let buffer = {
             let sessions = self.sessions.lock().await;
-            let session = sessions.get(&pid).ok_or_else(|| format!("No session found for PID {}", pid))?;
-        }
-
-        let buffer: Vec<String> = session.stdout_buffer.clone();
+            let session = match sessions.get(&pid) {
+                Some(s) => s,
+                None => return Err(format!("No session found for PID {}", pid)),
+            };
+            if !session.is_complete && offset == 0 {
+                drop(sessions);
+                tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+                let sessions = self.sessions.lock().await;
+                match sessions.get(&pid) {
+                    Some(_) => (),
+                    None => return Err(format!("No session found for PID {}", pid)),
+                }
+            }
+            session.stdout_buffer.clone()
+        };
         let total_lines = buffer.len();
 
         let start_idx = if offset < 0 {
