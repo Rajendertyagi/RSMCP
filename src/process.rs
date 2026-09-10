@@ -150,23 +150,26 @@ impl ProcessManager {
         offset: i64,
         length: i64,
     ) -> Result<ReadResult, String> {
-        let buffer = {
+        let buffer;
+        let is_complete;
+        {
             let sessions = self.sessions.lock().await;
             let session = match sessions.get(&pid) {
                 Some(s) => s,
                 None => return Err(format!("No session found for PID {}", pid)),
             };
-            if !session.is_complete && offset == 0 {
-                drop(sessions);
-                tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
-                let sessions = self.sessions.lock().await;
-                match sessions.get(&pid) {
-                    Some(_) => (),
-                    None => return Err(format!("No session found for PID {}", pid)),
-                }
+            is_complete = session.is_complete;
+            buffer = session.stdout_buffer.clone();
+        }
+
+        if !is_complete && offset == 0 {
+            tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+            let sessions = self.sessions.lock().await;
+            match sessions.get(&pid) {
+                Some(_) => (),
+                None => return Err(format!("No session found for PID {}", pid)),
             }
-            session.stdout_buffer.clone()
-        };
+        }
         let total_lines = buffer.len();
 
         let start_idx = if offset < 0 {
@@ -182,7 +185,7 @@ impl ProcessManager {
             output: lines.join("\n"),
             read_count: end_idx - start_idx,
             total_lines,
-            is_complete: session.is_complete,
+            is_complete,
             remaining: total_lines - end_idx,
         })
     }
