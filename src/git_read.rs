@@ -236,7 +236,7 @@ pub fn git_log(request: &GitLogRequest) -> Result<GitLogOutput, String> {
         "--date=short".to_string(),
     ]);
 
-    let log_out = cmd(&args, &repo_root).map_err(|e| format!("git log failed: {}", e))?;
+    let log_out = cmd(&args.iter().map(|s| s.as_str()).collect::<Vec<_>>()[..], &repo_root).map_err(|e| format!("git log failed: {}", e))?;
     let lines: Vec<&str> = String::from_utf8_lossy(&log_out.stdout).lines().collect();
 
     let mut entries = Vec::new();
@@ -292,9 +292,19 @@ pub fn git_show(request: &GitShowRequest) -> Result<GitShowOutput, String> {
     }
 
     // Get diff
-    let diff_out = cmd(&["diff", "--numstat", &request.sha, "--"], &repo_root)
-        .unwrap_or_else(|_| Command::new("git").args(&["diff", "--numstat", &request.sha, "--"])
-            .current_dir(&repo_root).output().unwrap_or_default());
+    let diff_out = match cmd(&["diff", "--numstat", &request.sha, "--"], &repo_root) {
+        Ok(o) => o,
+        Err(_) => {
+            let fallback = Command::new("git")
+                .args(&["diff", "--numstat", &request.sha, "--"])
+                .current_dir(&repo_root)
+                .output();
+            match fallback {
+                Ok(o) => o,
+                Err(_) => std::process::Output { status: Default::default(), stdout: Vec::new(), stderr: Vec::new() },
+            }
+        }
+    };
 
     let diff_text = String::from_utf8_lossy(&diff_out.stdout);
     let mut files_changed = Vec::new();
@@ -344,7 +354,7 @@ pub fn git_diff(request: &GitDiffRequest) -> Result<String, String> {
         args.push(filter.clone());
     }
 
-    let out = cmd(&args, &repo_root).map_err(|e| format!("git diff failed: {}", e))?;
+    let out = cmd(&args.iter().map(|s| s.as_str()).collect::<Vec<_>>()[..], &repo_root).map_err(|e| format!("git diff failed: {}", e))?;
     Ok(String::from_utf8_lossy(&out.stdout).to_string())
 }
 

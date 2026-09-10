@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::sync::Arc;
 
-use crossbeam::queue::ArrayQueue;
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::process::Command;
 use tokio::sync::Mutex;
 
@@ -10,7 +10,7 @@ const MAX_BUFFER_CHARS: usize = 10 * 1024 * 1024; // 10MB buffer per process
 
 pub struct ProcessSession {
     pub pid: u32,
-    pub stdout_buffer: ArrayQueue<String>,
+    pub stdout_buffer: Vec<String>,
     pub child: Mutex<tokio::process::Child>,
     pub is_complete: bool,
 }
@@ -38,7 +38,7 @@ impl ProcessManager {
         let pid = self.next_pid;
         self.next_pid += 1;
 
-        let stdout_buffer = ArrayQueue::new(100_000);
+        let stdout_buffer: Vec<String> = Vec::new();
 
         let mut cmd = Command::new("cmd.exe");
         cmd.arg("/c").arg(command);
@@ -86,9 +86,9 @@ impl ProcessManager {
                                     }
                                     if let Ok(q) = sessions.lock().await.get_mut(&pid_clone) {
                                         if q.stdout_buffer.len() >= 100_000 {
-                                            let _ = q.stdout_buffer.pop();
+                                            q.stdout_buffer.remove(0);
                                         }
-                                        let _ = q.stdout_buffer.push(line.to_string());
+                                        q.stdout_buffer.push(line.to_string());
                                         total_chars += line.len() + 1;
                                     }
                                 }
@@ -127,9 +127,9 @@ impl ProcessManager {
                 if !stderr_out.is_empty() {
                     if let Ok(q) = sessions.lock().await.get_mut(&pid_clone) {
                         if q.stdout_buffer.len() >= 100_000 {
-                            let _ = q.stdout_buffer.pop();
+                            q.stdout_buffer.remove(0);
                         }
-                        let _ = q.stdout_buffer.push(format!("[stderr] {}", stderr_out.trim()));
+                        q.stdout_buffer.push(format!("[stderr] {}", stderr_out.trim()));
                     }
                 }
             }
@@ -159,7 +159,7 @@ impl ProcessManager {
             let sessions = self.sessions.lock().await;
         }
 
-        let buffer: Vec<String> = session.stdout_buffer.iter().cloned().collect();
+        let buffer: Vec<String> = session.stdout_buffer.clone();
         let total_lines = buffer.len();
 
         let start_idx = if offset < 0 {
@@ -168,7 +168,7 @@ impl ProcessManager {
             offset as usize
         };
 
-        let end_idx = std::cmp::min(start_idx + length, total_lines);
+        let end_idx = std::cmp::min(start_idx + length as usize, total_lines);
         let lines: Vec<String> = buffer[start_idx..end_idx].to_vec();
 
         Ok(ReadResult {

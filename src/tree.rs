@@ -73,8 +73,8 @@ pub fn list_tree(request: &ListTreeRequest) -> Result<ListTreeOutput, TreeError>
         return Err(TreeError::NotDirectory);
     }
 
-    let page_size = request.max_entries.unwrap_or(1000);
-    let max_warnings = 32;
+    let page_size = request.max_entries.map_or(1000usize, |v| v as usize);
+    let max_warnings = 32usize;
 
     // Build include/exclude globs (simple suffix matching for Windows paths)
     let inc_patterns: Vec<&str> = request.include.iter().map(|s| s.as_str()).collect();
@@ -83,7 +83,8 @@ pub fn list_tree(request: &ListTreeRequest) -> Result<ListTreeOutput, TreeError>
     let mut entries = Vec::new();
     let mut warnings = Vec::new();
 
-    walk_dir(&root, &root, 0, request.depth, &inc_patterns, &exc_patterns, &mut entries, &mut warnings, false);
+    let depth_usize = request.depth as usize;
+    walk_dir(&root, &root, 0, depth_usize, &inc_patterns, &exc_patterns, &mut entries, &mut warnings, false);
 
     // Sort by relative path
     entries.sort_unstable_by(|a, b| a.relative_path.cmp(&b.relative_path));
@@ -105,7 +106,7 @@ pub fn list_tree(request: &ListTreeRequest) -> Result<ListTreeOutput, TreeError>
 
     Ok(ListTreeOutput {
         root: display_path(&root),
-        depth: request.depth,
+        depth: depth_usize,
         entries: final_entries,
         next_cursor,
         has_more,
@@ -127,8 +128,8 @@ fn walk_dir(
     if depth > max_depth { return; }
     if is_link { return; } // skip symlinked directories
 
-    let Ok(mut items) = std::fs::read_dir(current) else {
-        if warnings.len() < 32 {
+    let Ok(mut dir_iter) = std::fs::read_dir(current).map(|d| d.into_iter().filter_map(|e| e.ok())) else {
+        if warnings.len() < max_warnings {
             warnings.push(TreeWarning {
                 path: display_path(current),
                 message: "permission denied".to_string(),
@@ -137,7 +138,7 @@ fn walk_dir(
         return;
     };
 
-    while let Some(Ok(entry)) = items.next() {
+    while let Some(entry) = dir_iter.next() {
         let entry = match entry {
             Ok(e) => e,
             Err(e) => {

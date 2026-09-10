@@ -75,7 +75,7 @@ fn grep_file(
     let total = lines.len();
 
     for (i, line) in lines.iter().enumerate() {
-        if results.len() >= max_matches { break; }
+        if results.len() >= max_matches as usize { break; }
         if !regex.is_match(line) { continue; }
 
         let line_num = i + 1;
@@ -145,7 +145,7 @@ fn grep_directory(
         });
 
     for entry in walk.into_iter().filter_map(|e| e.ok()) {
-        if results.len() >= max_matches { break; }
+        if results.len() >= max_matches as usize { break; }
         let filepath = entry.path();
         if !filepath.is_file() { continue; }
         grep_file(filepath, regex, request, results, max_matches);

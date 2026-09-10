@@ -321,7 +321,9 @@ impl FileSystemHandler {
             FileSystemTools::ProcessList(params) => ProcessList::run_tool(params, &pm).await,
             FileSystemTools::ProcessPs(params) => ProcessPs::run_tool(params, &pm).await,
             _ => Err(CallToolError::new(
-                "Invalid process tool".to_string(),
+                crate::error::ServiceError::FromString(
+                    "Invalid process tool".to_string(),
+                ),
             )),
         }
     }

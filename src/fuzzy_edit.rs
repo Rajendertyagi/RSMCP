@@ -3,6 +3,7 @@ use std::path::Path;
 use regex::Regex;
 use rust_mcp_sdk::schema::{CallToolResult, schema_utils::CallToolError, TextContent};
 use strsim::{levenshtein, jaro_winkler};
+use crate::error::ServiceError;
 
 const FUZZY_THRESHOLD: f64 = 0.7;
 
@@ -15,7 +16,7 @@ pub async fn edit_block(
 ) -> std::result::Result<CallToolResult, CallToolError> {
     if search.is_empty() {
         return Ok(CallToolResult::with_error(CallToolError::new(
-            "Search string cannot be empty.".to_string(),
+            ServiceError::FromString("Search string cannot be empty.".to_string()),
         )));
     }
 
@@ -28,12 +29,13 @@ pub async fn edit_block(
     };
 
     let content = std::fs::read_to_string(&file_path).map_err(|e| {
-        CallToolError::new(format!("Failed to read file: {}", e))
+        CallToolError::new(ServiceError::FromString(format!("Failed to read file: {}", e)))
     })?;
 
     let count = content.matches(search).count();
+    let expected_usize = expected as usize;
 
-    if count > 0 && count == expected {
+    if count > 0 && count == expected_usize {
         let new_content = if expected == 1 {
             content.replacen(search, replace, 1)
         } else {
@@ -41,7 +43,7 @@ pub async fn edit_block(
         };
 
         std::fs::write(&file_path, &new_content).map_err(|e| {
-            CallToolError::new(format!("Failed to write file: {}", e))
+            CallToolError::new(ServiceError::FromString(format!("Failed to write file: {}", e)))
         })?;
 
         return Ok(CallToolResult::text_content(vec![TextContent::from(
@@ -49,11 +51,13 @@ pub async fn edit_block(
         )]));
     }
 
-    if count > 0 && count != expected {
+    if count > 0 && count != expected_usize {
         return Ok(CallToolResult::with_error(CallToolError::new(
-            format!(
-                "Expected {} occurrences but found {} in {}. Please adjust expected count or search string.",
-                expected, count, path.display()
+            ServiceError::FromString(
+                format!(
+                    "Expected {} occurrences but found {} in {}. Please adjust expected count or search string.",
+                    expected, count, path.display()
+                ),
             ),
         )));
     }
@@ -64,20 +68,24 @@ pub async fn edit_block(
     if similarity >= FUZZY_THRESHOLD {
         let diff = highlight_diff(search, &best_match);
         return Ok(CallToolResult::with_error(CallToolError::new(
-            format!(
-                "Exact match not found. Found similar text with {}% similarity:\n\n{}\n\nTo replace, use the exact text shown above.",
-                (similarity * 100) as usize, diff
+            ServiceError::FromString(
+                format!(
+                    "Exact match not found. Found similar text with {}% similarity:\n\n{}\n\nTo replace, use the exact text shown above.",
+                    (similarity * 100) as usize, diff
+                ),
             ),
         )));
     }
 
     Ok(CallToolResult::with_error(CallToolError::new(
-        format!(
-            "Search content not found in {}. The closest match was '{}' with only {}% similarity, which is below the {}% threshold.",
-            path.display(),
-            best_match,
-            (similarity * 100) as usize,
-            (FUZZY_THRESHOLD * 100) as usize
+        ServiceError::FromString(
+            format!(
+                "Search content not found in {}. The closest match was '{}' with only {}% similarity, which is below the {}% threshold.",
+                path.display(),
+                best_match,
+                (similarity * 100) as usize,
+                (FUZZY_THRESHOLD * 100) as usize
+            ),
         ),
     )))
 }
@@ -99,16 +107,16 @@ pub async fn search_and_replace(
     };
 
     let content = std::fs::read_to_string(&file_path).map_err(|e| {
-        CallToolError::new(format!("Failed to read file: {}", e))
+        CallToolError::new(ServiceError::FromString(format!("Failed to read file: {}", e)))
     })?;
 
     if is_regex {
         let re = Regex::new(pattern).map_err(|e| {
-            CallToolError::new(format!("Invalid regex pattern: {}", e))
+            CallToolError::new(ServiceError::FromString(format!("Invalid regex pattern: {}", e)))
         })?;
         let matches = re.find_iter(&content).count();
         let max = if max_replacements > 0 {
-            max_replacements
+            max_replacements as usize
         } else {
             usize::MAX
         };
@@ -130,14 +138,14 @@ pub async fn search_and_replace(
     }
 
     let count = content.matches(pattern).count();
-    let new_content = if max_replacements > 0 && count > max_replacements {
-        content.replacen(pattern, replacement, max_replacements)
+    let new_content = if max_replacements > 0 && count > max_replacements as usize {
+        content.replacen(pattern, replacement, max_replacements as usize)
     } else {
         content.replace(pattern, replacement)
     };
 
     std::fs::write(&file_path, &new_content).map_err(|e| {
-        CallToolError::new(format!("Failed to write file: {}", e))
+        CallToolError::new(ServiceError::FromString(format!("Failed to write file: {}", e)))
     })?;
 
     Ok(CallToolResult::text_content(vec![TextContent::from(
