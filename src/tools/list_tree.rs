@@ -38,7 +38,7 @@ impl ListTree {
         use std::path::PathBuf;
         use crate::tree::{ListTreeRequest, list_tree};
 
-        let resolved = context.resolve(PathBuf::from(&params.path)).await.map_err(CallToolError::new)?;
+        let resolved = context.resolve(std::path::Path::new(&params.path)).await.map_err(CallToolError::new)?;
         let abs_path = if let Some(unc_root) = &resolved.unc_root {
             unc_root.join(&resolved.rel)
         } else {

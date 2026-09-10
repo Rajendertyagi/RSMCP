@@ -18,14 +18,14 @@ pub struct ProcessSession {
 #[derive(Clone)]
 pub struct ProcessManager {
     sessions: Arc<Mutex<HashMap<u32, ProcessSession>>>,
-    next_pid: u32,
+    next_pid: std::cell::Cell<u32>,
 }
 
 impl ProcessManager {
     pub fn new() -> Self {
         Self {
             sessions: Arc::new(Mutex::new(HashMap::new())),
-            next_pid: 1000,
+            next_pid: std::cell::Cell::new(1000),
         }
     }
 
@@ -35,8 +35,8 @@ impl ProcessManager {
         cwd: Option<&Path>,
         timeout_ms: Option<u64>,
     ) -> Result<StartResult, String> {
-        let pid = self.next_pid;
-        self.next_pid += 1;
+        let pid = self.next_pid.get();
+        self.next_pid.set(pid + 1);
 
         let stdout_buffer: Vec<String> = Vec::new();
 
@@ -65,6 +65,7 @@ impl ProcessManager {
 
         let sessions = self.sessions.clone();
         let pid_clone = pid;
+        let sessions_for_stdout = sessions.clone();
 
         // Spawn a task to read stdout/stderr and buffer it
         tokio::spawn(async move {
@@ -84,7 +85,7 @@ impl ProcessManager {
                                     if total_chars >= MAX_BUFFER_CHARS {
                                         break;
                                     }
-                                    if let Some(q) = sessions.lock().await.get_mut(&pid_clone) {
+                                    if let Some(q) = sessions_for_stdout.lock().await.get_mut(&pid_clone) {
                                         if q.stdout_buffer.len() >= 100_000 {
                                             q.stdout_buffer.remove(0);
                                         }

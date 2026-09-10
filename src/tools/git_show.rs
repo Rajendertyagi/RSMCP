@@ -24,7 +24,7 @@ impl GitShow {
     ) -> std::result::Result<CallToolResult, CallToolError> {
         use crate::git_read::{git_show, GitShowRequest};
 
-        let resolved = context.resolve(PathBuf::from(&params.path)).await.map_err(CallToolError::new)?;
+        let resolved = context.resolve(std::path::Path::new(&params.path)).await.map_err(CallToolError::new)?;
         let abs_path = if let Some(unc_root) = &resolved.unc_root {
             unc_root.join(&resolved.rel)
         } else {
