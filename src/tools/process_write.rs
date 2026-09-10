@@ -21,7 +21,7 @@ impl ProcessWrite {
         params: Self,
         context: &crate::process::ProcessManager,
     ) -> std::result::Result<CallToolResult, CallToolError> {
-        context.write_input(params.pid, &params.data).await?;
+        context.write_input(params.pid, &params.data).await.map_err(|e| CallToolError::new(crate::error::ServiceError::FromString(e)))?;
         Ok(CallToolResult::text_content(vec![TextContent::from(
             "Input sent successfully.",
         )]))

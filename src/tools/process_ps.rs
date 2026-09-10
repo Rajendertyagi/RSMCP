@@ -16,7 +16,7 @@ impl ProcessPs {
         _params: Self,
         context: &crate::process::ProcessManager,
     ) -> std::result::Result<CallToolResult, CallToolError> {
-        let processes = context.list_processes().await?;
+        let processes = context.list_processes().await.map_err(|e| CallToolError::new(crate::error::ServiceError::FromString(e)))?;
         if processes.is_empty() {
             return Ok(CallToolResult::text_content(vec![TextContent::from(
                 "No processes found.",

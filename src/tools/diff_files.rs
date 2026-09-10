@@ -32,7 +32,7 @@ impl DiffFiles {
             format: params.format,
         };
 
-        let output = diff_files(&request).map_err(|e| CallToolError::new(e))?;
+        let output = diff_files(&request).map_err(|e| CallToolError::new(crate::error::ServiceError::FromString(e)))?;
 
         let mut result = String::new();
         if output.format == "minimal" {

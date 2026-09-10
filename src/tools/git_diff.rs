@@ -43,7 +43,7 @@ impl GitDiff {
             path_filter: params.path_filter,
         };
 
-        let diff = git_diff(&request).map_err(|e| CallToolError::new(e))?;
+        let diff = git_diff(&request).map_err(|e| CallToolError::new(crate::error::ServiceError::FromString(e)))?;
 
         Ok(CallToolResult::text_content(vec![TextContent::from(diff)]))
     }

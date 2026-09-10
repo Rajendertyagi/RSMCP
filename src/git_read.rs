@@ -237,7 +237,8 @@ pub fn git_log(request: &GitLogRequest) -> Result<GitLogOutput, String> {
     ]);
 
     let log_out = cmd(&args.iter().map(|s| s.as_str()).collect::<Vec<_>>()[..], &repo_root).map_err(|e| format!("git log failed: {}", e))?;
-    let lines: Vec<&str> = String::from_utf8_lossy(&log_out.stdout).lines().collect();
+    let log_stdout = String::from_utf8_lossy(&log_out.stdout);
+    let lines: Vec<&str> = log_stdout.lines().collect();
 
     let mut entries = Vec::new();
     let mut i = 0;
@@ -251,9 +252,10 @@ pub fn git_log(request: &GitLogRequest) -> Result<GitLogOutput, String> {
         i += 4;
     }
 
+    let total = entries.len();
     Ok(GitLogOutput {
         entries,
-        total: entries.len(),
+        total,
     })
 }
 

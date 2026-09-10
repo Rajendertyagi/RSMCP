@@ -43,7 +43,7 @@ impl Grep {
             max_matches: params.max_matches,
         };
 
-        let matches = grep(&request, context).await.map_err(|e| CallToolError::new(e))?;
+        let matches = grep(&request, context).await.map_err(|e| CallToolError::new(crate::error::ServiceError::FromString(e)))?;
 
         if matches.is_empty() {
             return Ok(CallToolResult::text_content(vec![TextContent::from(

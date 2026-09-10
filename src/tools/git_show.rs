@@ -36,7 +36,7 @@ impl GitShow {
             sha: params.sha,
         };
 
-        let output = git_show(&request).map_err(|e| CallToolError::new(e))?;
+        let output = git_show(&request).map_err(|e| CallToolError::new(crate::error::ServiceError::FromString(e)))?;
 
         let mut result = String::new();
         result.push_str(&format!(

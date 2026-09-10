@@ -43,7 +43,7 @@ impl GitBlame {
             max_lines: params.max_lines,
         };
 
-        let output = git_blame(&request).map_err(|e| CallToolError::new(e))?;
+        let output = git_blame(&request).map_err(|e| CallToolError::new(crate::error::ServiceError::FromString(e)))?;
 
         let mut result = format!("Blame: {}\nTotal lines: {}\n\n", output.file, output.total_lines);
 

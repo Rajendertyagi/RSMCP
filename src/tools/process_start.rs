@@ -25,7 +25,7 @@ impl ProcessStart {
     ) -> std::result::Result<CallToolResult, CallToolError> {
         use std::path::Path;
         let cwd = params.cwd.as_ref().map(Path::new);
-        let result = context.start(&params.command, cwd, params.timeout_ms).await?;
+        let result = context.start(&params.command, cwd, params.timeout_ms).await.map_err(|e| CallToolError::new(crate::error::ServiceError::FromString(e)))?;
         Ok(CallToolResult::text_content(vec![TextContent::from(result.message)]))
     }
 }

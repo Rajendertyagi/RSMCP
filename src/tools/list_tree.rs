@@ -54,7 +54,7 @@ impl ListTree {
             cursor: params.cursor,
         };
 
-        let output = list_tree(&request).map_err(|e| CallToolError::new(e.to_string()))?;
+        let output = list_tree(&request).map_err(|e| CallToolError::new(crate::error::ServiceError::FromString(e.to_string())))?;
 
         let mut result = format!(
             "Root: {}\nDepth: {}\nEntries: {}\nHas more: {}\n\n",

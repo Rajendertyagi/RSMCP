@@ -47,7 +47,7 @@ impl GitLog {
             path_filter: params.path_filter,
         };
 
-        let output = git_log(&request).map_err(|e| CallToolError::new(e))?;
+        let output = git_log(&request).map_err(|e| CallToolError::new(crate::error::ServiceError::FromString(e)))?;
 
         let mut result = format!("Commits (showing {} of {}):\n\n", output.entries.len(), output.total);
         for entry in &output.entries {

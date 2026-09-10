@@ -84,7 +84,7 @@ impl ProcessManager {
                                     if total_chars >= MAX_BUFFER_CHARS {
                                         break;
                                     }
-                                    if let Ok(q) = sessions.lock().await.get_mut(&pid_clone) {
+                                    if let Some(q) = sessions.lock().await.get_mut(&pid_clone) {
                                         if q.stdout_buffer.len() >= 100_000 {
                                             q.stdout_buffer.remove(0);
                                         }
@@ -125,7 +125,7 @@ impl ProcessManager {
             if let Some(session) = sessions.lock().await.get_mut(&pid_clone) {
                 session.is_complete = true;
                 if !stderr_out.is_empty() {
-                    if let Ok(q) = sessions.lock().await.get_mut(&pid_clone) {
+                    if let Some(q) = sessions.lock().await.get_mut(&pid_clone) {
                         if q.stdout_buffer.len() >= 100_000 {
                             q.stdout_buffer.remove(0);
                         }
@@ -157,6 +157,7 @@ impl ProcessManager {
             drop(sessions);
             tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
             let sessions = self.sessions.lock().await;
+            let session = sessions.get(&pid).ok_or_else(|| format!("No session found for PID {}", pid))?;
         }
 
         let buffer: Vec<String> = session.stdout_buffer.clone();

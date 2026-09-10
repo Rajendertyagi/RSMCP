@@ -29,7 +29,7 @@ impl ProcessRead {
         params: Self,
         context: &crate::process::ProcessManager,
     ) -> std::result::Result<CallToolResult, CallToolError> {
-        let result = context.read_output(params.pid, params.offset, params.length).await?;
+        let result = context.read_output(params.pid, params.offset, params.length).await.map_err(|e| CallToolError::new(crate::error::ServiceError::FromString(e)))?;
         let msg = if result.output.is_empty() {
             "(No output in requested range)".to_string()
         } else {

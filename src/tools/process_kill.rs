@@ -20,7 +20,7 @@ impl ProcessKill {
         params: Self,
         context: &crate::process::ProcessManager,
     ) -> std::result::Result<CallToolResult, CallToolError> {
-        let result = context.kill(params.pid).await?;
+        let result = context.kill(params.pid).await.map_err(|e| CallToolError::new(crate::error::ServiceError::FromString(e)))?;
         Ok(CallToolResult::text_content(vec![TextContent::from(
             if result.killed {
                 format!("Process {} terminated.", params.pid)

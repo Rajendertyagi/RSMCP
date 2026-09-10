@@ -84,7 +84,7 @@ pub fn list_tree(request: &ListTreeRequest) -> Result<ListTreeOutput, TreeError>
     let mut warnings = Vec::new();
 
     let depth_usize = request.depth as usize;
-    walk_dir(&root, &root, 0, depth_usize, &inc_patterns, &exc_patterns, &mut entries, &mut warnings, false);
+    walk_dir(&root, &root, 0, depth_usize, &inc_patterns, &exc_patterns, &mut entries, &mut warnings, false, max_warnings);
 
     // Sort by relative path
     entries.sort_unstable_by(|a, b| a.relative_path.cmp(&b.relative_path));
@@ -124,6 +124,7 @@ fn walk_dir(
     entries: &mut Vec<TreeEntry>,
     warnings: &mut Vec<TreeWarning>,
     is_link: bool,
+    max_warnings: usize,
 ) {
     if depth > max_depth { return; }
     if is_link { return; } // skip symlinked directories
@@ -139,19 +140,6 @@ fn walk_dir(
     };
 
     while let Some(entry) = dir_iter.next() {
-        let entry = match entry {
-            Ok(e) => e,
-            Err(e) => {
-                if warnings.len() < max_warnings {
-                    warnings.push(TreeWarning {
-                        path: String::new(),
-                        message: e.to_string(),
-                    });
-                }
-                continue;
-            }
-        };
-
         let path = entry.path();
         let metadata = match entry.metadata() {
             Ok(m) => m,
@@ -192,7 +180,7 @@ fn walk_dir(
         });
 
         if is_dir && depth < max_depth {
-            walk_dir(root, &path, depth + 1, max_depth, include, exclude, entries, warnings, is_symlink);
+            walk_dir(root, &path, depth + 1, max_depth, include, exclude, entries, warnings, is_symlink, max_warnings);
         }
     }
 }

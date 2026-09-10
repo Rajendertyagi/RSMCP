@@ -71,7 +71,7 @@ pub async fn edit_block(
             ServiceError::FromString(
                 format!(
                     "Exact match not found. Found similar text with {}% similarity:\n\n{}\n\nTo replace, use the exact text shown above.",
-                    (similarity * 100) as usize, diff
+                    (similarity * 100.0) as usize, diff
                 ),
             ),
         )));
@@ -83,8 +83,8 @@ pub async fn edit_block(
                 "Search content not found in {}. The closest match was '{}' with only {}% similarity, which is below the {}% threshold.",
                 path.display(),
                 best_match,
-                (similarity * 100) as usize,
-                (FUZZY_THRESHOLD * 100) as usize
+                (similarity * 100.0) as usize,
+                (FUZZY_THRESHOLD * 100.0) as usize
             ),
         ),
     )))

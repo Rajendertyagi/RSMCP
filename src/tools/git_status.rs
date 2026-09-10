@@ -29,7 +29,7 @@ impl GitStatus {
             resolved.display.clone()
         };
 
-        let output = git_status(&abs_path).map_err(|e| CallToolError::new(e))?;
+        let output = git_status(&abs_path).map_err(|e| CallToolError::new(crate::error::ServiceError::FromString(e)))?;
 
         let mut result = format!(
             "Branch: {}{}\nAhead: {}\nBehind: {}\n\n",
